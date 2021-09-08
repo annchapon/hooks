@@ -1,8 +1,8 @@
-import React, { Component, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 
 const App = () => {
-  const [ value, setValue ] = useState(0);
+  const [ value, setValue ] = useState(1);
   const [ visible, setVisible ] = useState(true);
 
   if (visible) {
@@ -14,9 +14,7 @@ const App = () => {
         <button onClick={() => setVisible(false)}>
           Hide
         </button>
-        <ClassCounter value={value} />
-        <HookCounter value={value} />
-        <Notification />
+        <PlanetInfo id={value} />
       </div>      
     );
   } else {
@@ -24,47 +22,24 @@ const App = () => {
   }
 };
 
-const HookCounter = ({ value }) => {
-  useEffect(() => {
-    console.log('useEffect');
-    return () => console.log('clear');
-  }, [ value ]);
-
-  return <p>{ value }</p>;
-};
-
-const Notification = () => {
-  const [ visible, setVisible ] = useState(true);
+const PlanetInfo = ({ id }) => {
+  const [ name, setName ] = useState(null);
 
   useEffect(() => {
-    const timeout = setTimeout(
-      () => setVisible(false), 2500);
-    return () => clearTimeout(timeout);
-  }, []);
-  
+    let cancelled = false;
+
+    fetch(`https://swapi.dev/api/planets/${id}`)
+      .then(res => res.json())
+      .then(data => !cancelled && setName(data.name));
+    return () => cancelled = true;
+  }, [id]);
+
   return (
     <div>
-      { visible && <p>Notification</p> }
+      <p>ID: {id}<br />
+      Planet name: {name}</p>
     </div>
   );
 };
-
-class ClassCounter extends Component {
-  componentDidMount() {
-    console.log('class: componentDidMount');
-  }
-
-  componentDidUpdate() {
-    console.log('class: componentDidUpdate');
-  }
-
-  componentWillUnmount() {
-    console.log('class: componentWillUnmount');
-  }
-
-  render() {
-    return <p>{ this.props.value }</p>;
-  }
-} 
 
 ReactDOM.render(<App />, document.getElementById('root'));
